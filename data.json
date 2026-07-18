@@ -1,0 +1,27 @@
+{
+  "users": [],
+  "documents": [
+    {
+      "id": 1,
+      "title": "Resume 1",
+      "type": "Resume"
+    },
+    {
+      "id": 2,
+      "title": "Resume 2",
+      "type": "Resume"
+    },
+   {
+    "id": 3,
+    "title": "My Resume",
+    "type": "Resume"
+},
+    {
+      "id": 4,
+      "title": "My Resume",
+      "type": "Resume"
+    }
+  ],
+  "templates": [],
+  "applications": []
+}
