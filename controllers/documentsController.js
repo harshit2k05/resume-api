@@ -1,96 +1,63 @@
-const fs = require("fs");
+const model = require("../models/resourceModel");
 
-// GET ALL
 function getAllDocuments(req, res) {
-    const data = JSON.parse(fs.readFileSync("data.json"));
-    res.json(data.documents);
+    res.json(model.getAll("documents"));
 }
 
-// CREATE
 function createDocument(req, res) {
-    const data = JSON.parse(fs.readFileSync("data.json"));
-
-    const document = {
-        id: data.documents.length + 1,
+    const document = model.create("documents", {
+        id: model.getAll("documents").length + 1,
         title: req.body.title,
         type: req.body.type
-    };
-
-    data.documents.push(document);
-
-    fs.writeFileSync("data.json", JSON.stringify(data, null, 2));
+    });
 
     res.status(201).json(document);
 }
 
-// GET BY ID
 function getDocumentById(req, res) {
-    const data = JSON.parse(fs.readFileSync("data.json"));
+    const document = model.getById("documents", req.params.id);
 
-    for (let i = 0; i < data.documents.length; i++) {
-        if (data.documents[i].id == req.params.id) {
-            return res.json(data.documents[i]);
-        }
-    }
-
-    res.status(404).json({ message: "Document not found" });
+    if (!document) return res.status(404).json({ message: "Document not found" });
+    res.json(document);
 }
 
-// UPDATE
 function updateDocument(req, res) {
-    const data = JSON.parse(fs.readFileSync("data.json"));
+    const document = model.update("documents", req.params.id, req.body);
 
-    for (let i = 0; i < data.documents.length; i++) {
-
-        if (data.documents[i].id == req.params.id) {
-
-            data.documents[i].title = req.body.title;
-            data.documents[i].type = req.body.type;
-
-            fs.writeFileSync("data.json", JSON.stringify(data, null, 2));
-
-            return res.json(data.documents[i]);
-        }
-    }
-
-    res.status(404).json({ message: "Document not found" });
+    if (!document) return res.status(404).json({ message: "Document not found" });
+    res.json(document);
 }
 
-// DELETE
 function deleteDocument(req, res) {
-    const data = JSON.parse(fs.readFileSync("data.json"));
-
-    for (let i = 0; i < data.documents.length; i++) {
-
-        if (data.documents[i].id == req.params.id) {
-
-            data.documents.splice(i, 1);
-
-            fs.writeFileSync("data.json", JSON.stringify(data, null, 2));
-
-            return res.json({ message: "Document deleted" });
-        }
+    if (!model.remove("documents", req.params.id)) {
+        return res.status(404).json({ message: "Document not found" });
     }
 
-    res.status(404).json({ message: "Document not found" });
+    res.status(204).send();
 }
 
-// DUPLICATE
 function duplicateDocument(req, res) {
-    res.json({ message: "Document duplicated" });
+    const document = model.getById("documents", req.params.id);
+
+    if (!document) return res.status(404).json({ message: "Document not found" });
+
+    const duplicate = model.create("documents", {
+        ...document,
+        id: model.getAll("documents").length + 1,
+        title: document.title + " Copy"
+    });
+
+    res.status(201).json(duplicate);
 }
 
-// IMPORT
 function importDocument(req, res) {
-    res.json({ message: "Document imported" });
+    const document = model.create("documents", {
+        id: model.getAll("documents").length + 1,
+        title: req.body.title || "Imported Document",
+        type: req.body.type || "Resume"
+    });
+
+    res.status(201).json(document);
 }
 
-module.exports = {
-    getAllDocuments,
-    createDocument,
-    getDocumentById,
-    updateDocument,
-    deleteDocument,
-    duplicateDocument,
-    importDocument
-};
+module.exports = { getAllDocuments, createDocument, getDocumentById, updateDocument, deleteDocument, duplicateDocument, importDocument };
