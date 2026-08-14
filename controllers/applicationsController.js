@@ -1,41 +1,32 @@
-const fs = require("fs");
+const model = require("../models/resourceModel");
 
-// GET
 function getApplications(req, res) {
-    const data = JSON.parse(fs.readFileSync("data.json"));
-    res.json(data.applications);
+    res.json(model.getAll("applications"));
 }
 
-// POST
 function createApplication(req, res) {
-    const data = JSON.parse(fs.readFileSync("data.json"));
-
-    const application = {
-        id: data.applications.length + 1,
+    const application = model.create("applications", {
+        id: model.getAll("applications").length + 1,
         company: req.body.company,
         status: req.body.status
-    };
+    });
 
-    data.applications.push(application);
+    res.status(201).json(application);
+}
 
-    fs.writeFileSync("data.json", JSON.stringify(data, null, 2));
+function updateApplication(req, res) {
+    const application = model.update("applications", req.params.id, req.body);
 
+    if (!application) return res.status(404).json({ message: "Application not found" });
     res.json(application);
 }
 
-// PATCH
-function updateApplication(req, res) {
-    res.json({ message: "Application Updated" });
-}
-
-// DELETE
 function deleteApplication(req, res) {
-    res.json({ message: "Application Deleted" });
+    if (!model.remove("applications", req.params.id)) {
+        return res.status(404).json({ message: "Application not found" });
+    }
+
+    res.status(204).send();
 }
 
-module.exports = {
-    getApplications,
-    createApplication,
-    updateApplication,
-    deleteApplication
-};
+module.exports = { getApplications, createApplication, updateApplication, deleteApplication };
